@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.10.0",
     "formik": "^2.4.6",
     "next": "15.3.4",
