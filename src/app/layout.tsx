@@ -1,9 +1,9 @@
-// app/layout.tsx (❌ no "use client" here!)
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ReduxProvider from "./ReduxProvider"; // ✅ use wrapper
-import Navbar from "./_component/navbar/page"; // ✅ use wrapper
+import ReduxProvider from "./ReduxProvider";
+import ClientLayout from "./ClientLayout"; // ✅ use this instead
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Navbar />
-        {/* Wrap the children with ReduxProvider to provide store access */}
-        <ReduxProvider>{children}</ReduxProvider>
+        <ReduxProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </ReduxProvider>
       </body>
     </html>
   );

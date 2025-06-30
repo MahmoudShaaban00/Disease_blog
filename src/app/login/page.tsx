@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { loginUser } from '@/lib/loginSlice';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { loginUser } from "@/lib/loginSlice";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const dispatch = useDispatch<any>();
@@ -13,21 +13,21 @@ export default function LoginPage() {
   const { loading, error, user } = useSelector((state: any) => state.login);
 
   useEffect(() => {
-    if (user) router.push('/');
+    if (user) router.push("/home");
   }, [user, router]);
 
   const validationSchema = Yup.object().shape({
-    email: Yup.string().email('Invalid email format').required('Email is required'),
+    email: Yup.string().email("Invalid email format").required("Email is required"),
     password: Yup.string()
       .matches(
         /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
-        'Password must be at least 8 chars, include upper, lower, number & special char'
+        "Password must be at least 8 chars, include upper, lower, number & special char"
       )
-      .required('Password is required'),
+      .required("Password is required"),
   });
 
   const formik = useFormik({
-    initialValues: { email: '', password: '' },
+    initialValues: { email: "", password: "" },
     validationSchema,
     onSubmit: (values) => dispatch(loginUser(values)),
   });
@@ -80,15 +80,32 @@ export default function LoginPage() {
           type="submit"
           className={`w-full py-2 rounded font-semibold ${
             loading
-              ? 'bg-white/30 text-white cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
+              ? "bg-white/30 text-white cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
           } transition`}
           disabled={loading}
         >
-          {loading ? 'Logging in...' : 'Login'}
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         {error && <p className="text-red-300 text-sm mt-4 text-center">{error}</p>}
+
+        <div className="mt-6 flex items-center justify-between space-y-2 text-sm">
+          <button
+            type="button"
+            onClick={() => router.push("/resendemail")}
+            className="text-white hover:underline"
+          >
+            Resend Email
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/register")}
+            className="text-white hover:underline"
+          >
+            Create Account
+          </button>
+        </div>
       </form>
     </div>
   );

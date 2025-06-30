@@ -1,24 +1,31 @@
 "use client";
+
 import React from 'react';
-import { FaBlog, FaUser, FaInfoCircle } from 'react-icons/fa'; // Added FaInfoCircle
+import { FaBlog, FaUser, FaInfoCircle } from 'react-icons/fa';
 import { MdCreate } from 'react-icons/md';
 import { AiFillHome } from 'react-icons/ai';
 import { useRouter } from 'next/navigation';
 import { FiLogOut } from "react-icons/fi";
-
+import { useDispatch } from 'react-redux';
+import { logout } from '@/lib/loginSlice';  // adjust path as needed
 
 export default function Navbar() {
+  const router = useRouter();
+  const dispatch = useDispatch();
 
-  let router = useRouter()
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userType');
 
-  const handleLogout = () =>{
-       localStorage.removeItem('token')
-       localStorage.removeItem('userId')
-       localStorage.removeItem('userType')
+    // Clear redux state
+    dispatch(logout());
 
-       router.push('/login')
-
+    // Redirect to login page
+    router.push('/login');
   }
+
   return (
     <div>
       <nav className="bg-gray-800 p-4">
@@ -33,14 +40,14 @@ export default function Navbar() {
           <ul className="flex space-x-6 text-gray-300">
             <li className="flex items-center space-x-1 hover:text-white">
               <AiFillHome />
-              <a href="/">Home</a>
+              <a href="/home">Home</a>
             </li>
             <li className="flex items-center space-x-1 hover:text-white">
               <MdCreate />
               <a href="/createPost">CreatePost</a>
             </li>
             <li className="flex items-center space-x-1 hover:text-white">
-              <FaInfoCircle />   {/* Icon for About */}
+              <FaInfoCircle />
               <a href="/about">About</a>
             </li>
             <li className="flex items-center space-x-1 hover:text-white">
@@ -48,16 +55,16 @@ export default function Navbar() {
               <a href="/profile">Profile</a>
             </li>
           </ul>
-      <div className="flex items-center justify-center">
-  <button
-    onClick={handleLogout}
-    className="px-4 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-2"
-  >
-    <FiLogOut size={18} />
-    Logout
-  </button>
-</div>
 
+          <div className="flex items-center justify-center">
+            <button
+              onClick={handleLogout}
+              className="px-4 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center gap-2"
+            >
+              <FiLogOut size={18} />
+              Logout
+            </button>
+          </div>
         </div>
       </nav>
     </div>

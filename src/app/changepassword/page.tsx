@@ -27,10 +27,10 @@ export default function ChangePassword() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6">
-      <h1 className="text-3xl font-bold mb-6">Change Password</h1>
+      <h1 className="text-3xl text-white font-bold mb-6">Change Password</h1>
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-full max-w-md space-y-4"
+        className="backdrop-blur-lg bg-white/10 text-white p-6 rounded-2xl shadow-md w-full max-w-md space-y-4"
       >
         <div>
           <label htmlFor="oldPassword" className="block mb-1 font-semibold">

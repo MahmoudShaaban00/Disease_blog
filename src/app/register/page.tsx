@@ -5,6 +5,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@/lib/authSlice";
+import { useRouter } from "next/navigation";
+
 
 const RegisterSchema = Yup.object().shape({
   Email: Yup.string().email("Invalid email").required("Email is required"),
@@ -22,6 +24,7 @@ const RegisterSchema = Yup.object().shape({
 
 export default function RegisterForm() {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { loading, error, user } = useSelector((state: any) => state.auth);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -40,28 +43,30 @@ export default function RegisterForm() {
             Image: null,
           }}
           validationSchema={RegisterSchema}
-          onSubmit={(values, { setSubmitting, resetForm }) => {
-            const formData = new FormData();
-            formData.append("Email", values.Email);
-            formData.append("Password", values.Password);
-            formData.append("FullName", values.FullName);
-            formData.append("Address", values.Address);
-            formData.append("UserType", values.UserType);
-            if (values.Image) {
-              formData.append("Image", values.Image);
-            }
+         onSubmit={(values, { setSubmitting, resetForm }) => {
+  const formData = new FormData();
+  formData.append("Email", values.Email);
+  formData.append("Password", values.Password);
+  formData.append("FullName", values.FullName);
+  formData.append("Address", values.Address);
+  formData.append("UserType", values.UserType);
+  if (values.Image) {
+    formData.append("Image", values.Image);
+  }
 
-            dispatch(registerUser(formData))
-              .unwrap()
-              .then(() => {
-                setSubmitting(false);
-                resetForm();
-                setImagePreview(null);
-              })
-              .catch(() => {
-                setSubmitting(false);
-              });
-          }}
+  dispatch(registerUser(formData))
+    .unwrap()
+    .then(() => {
+      setSubmitting(false);
+      resetForm();
+      setImagePreview(null);
+      router.push("/confirmemail"); // 🔁 Redirect after successful registration
+    })
+    .catch(() => {
+      setSubmitting(false);
+    });
+}}
+
         >
           {({ setFieldValue, isSubmitting }) => (
             <Form className="space-y-4">

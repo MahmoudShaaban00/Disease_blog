@@ -1,17 +1,19 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./authSlice"; // ✅ Make sure path is correct
-import {loginReducer} from "./loginSlice"; // ✅ Make sure path is correct
-import { postsReducer } from "./postsSlice"; // ✅ Make sure path is correct
-import { profileReducer } from "./profileSlice";
-import { commentReducer } from "./commentSlice";
+import {authReducer} from "./authSlice";
+import {loginReducer} from "./loginSlice";
+import {postsReducer} from "./postsSlice";
+import {profileReducer} from "./profileSlice";
+import {commentReducer} from "./commentSlice";
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer, // ✅ must be an object of reducers
-    login: loginReducer, // ✅ must be an object of reducers
-    posts : postsReducer, // ✅ must be an object of reducers
+    auth: authReducer,
+    login: loginReducer,
+    posts: postsReducer,
     profile: profileReducer,
-    comment : commentReducer,
+    comment: commentReducer,
   },
 });
 
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
