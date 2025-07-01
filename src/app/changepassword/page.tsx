@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function ChangePassword() {
   const dispatch = useDispatch<any>();
   const router = useRouter();
-  const { loading, error, message } = useSelector((state: any) => state.profile);
+  const { loading, error, message } = useSelector((state: State) => state.profile);
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

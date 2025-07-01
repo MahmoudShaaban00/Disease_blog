@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 export default function Page() {
   const dispatch = useDispatch<any>();
   const router = useRouter();
-  const { loading, error, emailConfirmed } = useSelector((state: any) => state.auth);
+  const { loading, error, emailConfirmed } = useSelector((state: State) => state.auth);
 
   const formik = useFormik({
     initialValues: {

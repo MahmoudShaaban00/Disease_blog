@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const dispatch = useDispatch<any>();
   const router = useRouter();
-  const { loading, error, user } = useSelector((state: any) => state.login);
+  const { loading, error, user } = useSelector((state:State) => state.login);
 
   useEffect(() => {
     if (user) router.push("/home");

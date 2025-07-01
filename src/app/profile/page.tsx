@@ -8,7 +8,7 @@ export default function UsersPage() {
 
   const router = useRouter();
   const dispatch = useDispatch<any>();
-  const { users, loading, error } = useSelector((state: any) => state.profile);
+  const { users, loading, error } = useSelector((state: State) => state.profile);
   const [isToggled, setIsToggled] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 

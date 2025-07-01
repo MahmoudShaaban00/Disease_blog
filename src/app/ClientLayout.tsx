@@ -1,11 +1,11 @@
-// app/ClientLayout.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
 import Navbar from "./_component/navbar/page";
-import React, { useEffect } from "react";
+import React from "react";
+import ProtectedRoute from "@/app/_component/ProtectedRouted/ProtectedRouted"; // ✅ Make sure path is correct
 
-const hiddenRoutes = [
+const publicRoutes = [
   "/login",
   "/register",
   "/changepassword",
@@ -13,16 +13,18 @@ const hiddenRoutes = [
   "/confirmemail",
 ];
 
-
-
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showNavbar = !hiddenRoutes.includes(pathname);
+
+  const isPublic = publicRoutes.includes(pathname);
+  const showNavbar = !isPublic;
 
   return (
     <>
       {showNavbar && <Navbar />}
-      {children}
+
+      {/* ✅ Wrap in ProtectedRoute if route is private */}
+      {isPublic ? children : <ProtectedRoute>{children}</ProtectedRoute>}
     </>
   );
 }

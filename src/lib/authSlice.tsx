@@ -2,19 +2,43 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// Define Auth State interface
+interface AuthState {
+  user: any | null;
+  loading: boolean;
+  error: string | null;
+  emailConfirmed: boolean;
+  emailResent: boolean;
+}
+
+// Initial state with proper typing
+const initialState: AuthState = {
+  user: null,
+  loading: false,
+  error: null,
+  emailConfirmed: false,
+  emailResent: false,
+};
+
 // Register User
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (formData: FormData, thunkAPI) => {
     try {
-      const res = await axios.post("https://cancapp.runasp.net/api/auth/register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        "https://cancapp.runasp.net/api/auth/register",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       console.log("Registration successful:", res.data);
       return res.data;
     } catch (error: any) {
       console.error("Registration error:", error);
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Registration failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Registration failed"
+      );
     }
   }
 );
@@ -24,14 +48,20 @@ export const confirmEmail = createAsyncThunk(
   "auth/confirmEmail",
   async (data: { email: string; otp: string }, thunkAPI) => {
     try {
-      const res = await axios.post("https://cancapp.runasp.net/api/auth/confirm-email", data, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await axios.post(
+        "https://cancapp.runasp.net/api/auth/confirm-email",
+        data,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       console.log("Email confirmed:", res.data);
       return res.data;
     } catch (error: any) {
       console.error("Email confirmation error:", error);
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Email confirmation failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Email confirmation failed"
+      );
     }
   }
 );
@@ -41,14 +71,20 @@ export const resendConfirmEmail = createAsyncThunk(
   "auth/resendConfirmEmail",
   async (data: { email: string }, thunkAPI) => {
     try {
-      const res = await axios.post("https://cancapp.runasp.net/api/auth/resend-Confirm-email", data, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await axios.post(
+        "https://cancapp.runasp.net/api/auth/resend-Confirm-email",
+        data,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       console.log("Resend confirmation email success:", res.data);
       return res.data;
     } catch (error: any) {
       console.error("Resend email error:", error);
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Resend email failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Resend email failed"
+      );
     }
   }
 );
@@ -56,13 +92,7 @@ export const resendConfirmEmail = createAsyncThunk(
 // Auth Slice
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
-    user: null,
-    loading: false,
-    error: null,
-    emailConfirmed: false,
-    emailResent: false,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -114,4 +144,4 @@ const authSlice = createSlice({
   },
 });
 
-export let authReducer = authSlice.reducer;
+export const authReducer = authSlice.reducer;
