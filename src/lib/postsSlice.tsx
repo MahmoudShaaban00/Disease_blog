@@ -1,4 +1,3 @@
-// src/lib/postsSlice.tsx
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 // GET all posts
@@ -14,24 +13,44 @@ export const getAllPosts = createAsyncThunk('getAllPosts/postsSlice', async () =
   const data = await response.json();
   console.log('Fetched posts:', data);
 
-  // ✅ Return only the array of posts
+  // Return only the array of posts
   return data.value.data;
 });
 
-
 // CREATE post
-export const createPost = createAsyncThunk('createPost/postsSlice', async (formdata: FormData) => {
+export const createPost = createAsyncThunk('createPost/postsSlice', async (formdata: FormData, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('token') || '';
+    const response = await fetch('https://cancapp.runasp.net/api/post', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formdata,
+    });
 
-  const response = await fetch('https://cancapp.runasp.net/api/post', {
-    method: 'POST',
-    body: formdata,
-  });
+    if (!response.ok) {
+      // Try to parse error JSON safely
+      let errorData = null;
+      try {
+        errorData = await response.json();
+      } catch {
+        // Ignore JSON parse error
+      }
+      return rejectWithValue(errorData?.message || `Failed to create post, status ${response.status}`);
+    }
 
-  const data = await response.json();
-  console.log('Created post:', data);
-  alert('Post created successfully!');
-  return data;
+    // Check if response has content before parsing JSON
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    console.log('Created post:', data);
+    return data;
+  } catch (error: any) {
+    return rejectWithValue(error.message || 'Network error');
+  }
 });
+
 
 // DELETE post
 export const deletePost = createAsyncThunk('deletePost/postsSlice', async (postId: string) => {
@@ -58,7 +77,6 @@ export const deletePost = createAsyncThunk('deletePost/postsSlice', async (postI
   return postId;
 });
 
-
 // UPDATE post
 export const updatePost = createAsyncThunk(
   "posts/updatePost",
@@ -80,7 +98,6 @@ export const updatePost = createAsyncThunk(
         return rejectWithValue(error.message || "Failed to update post");
       }
 
-      // ✅ Check if response has content before parsing
       const text = await res.text();
       const data = text ? JSON.parse(text) : {};
       return data;
@@ -89,7 +106,6 @@ export const updatePost = createAsyncThunk(
     }
   }
 );
-
 
 // SLICE
 const postsSlice = createSlice({

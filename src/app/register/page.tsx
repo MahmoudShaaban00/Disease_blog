@@ -114,7 +114,7 @@ export default function RegisterForm() {
                 <Field
                   as="select"
                   name="UserType"
-                  className="w-full p-2 bg-white/20 text-white border border-white/30 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full p-2 bg-white/20 text-black border border-white/30 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
                 >
                   <option value="">Select User Type</option>
                   <option value="Patient">Patient</option>

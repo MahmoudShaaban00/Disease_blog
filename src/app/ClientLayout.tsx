@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import Navbar from "./_component/navbar/page";
+import ProtectedRoute from "./_component/ProtectedRouted/ProtectedRouted"; // تأكد المسار صحيح
 import React from "react";
-import ProtectedRoute from "@/app/_component/ProtectedRouted/ProtectedRouted"; // ✅ Make sure path is correct
 
 const publicRoutes = [
   "/login",
@@ -23,8 +23,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <>
       {showNavbar && <Navbar />}
 
-      {/* ✅ Wrap in ProtectedRoute if route is private */}
-      {isPublic ? children : <ProtectedRoute>{children}</ProtectedRoute>}
+      {isPublic ? (
+        children
+      ) : (
+        <ProtectedRoute>
+          {children}
+        </ProtectedRoute>
+      )}
     </>
   );
 }

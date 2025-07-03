@@ -1,21 +1,32 @@
-// src/components/ProtectedRoute.tsx
 'use client';
-import { useSelector } from 'react-redux';
+
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { RootState } from '@/lib/store'; // adjust this to your store path
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login'); // Redirect to login if not authenticated
+    // اقرأ التوكن من localStorage
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      // لو التوكن مش موجود، أرجع المستخدم لـ login
+      router.replace('/login');
+      setIsAuthenticated(false);
+    } else {
+      // لو موجود، خلي الـ ProtectedRoute يظهِر المحتوى
+      setIsAuthenticated(true);
     }
-  }, [user, router]);
+  }, [router]);
 
-  if (!user) return null; // Or a spinner/loading
+  // إذا الحالة لسه بتتحدد، ممكن تعرض null (loading) عشان ما يعرضش الصفحة لحد ما يعرف
+  if (isAuthenticated === null) return null;
 
+  // لو مش مصرح، ما تعرضش المحتوى
+  if (!isAuthenticated) return null;
+
+  // لو مسموح، عرض المحتوى
   return <>{children}</>;
 }

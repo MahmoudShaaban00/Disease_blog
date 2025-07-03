@@ -1,15 +1,29 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { createPost } from '@/lib/postsSlice';
 import { useDispatch } from 'react-redux';
 
 export default function CreatePost() {
   const dispatch = useDispatch<any>();
 
-  const handlesubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // State for success and error messages
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handlesubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const Content = form.Content.value;
+    const Content = form.Content.value.trim();
+
+    // Validation: content length less than 1000 chars
+    if (Content.length > 1000) {
+      setErrorMessage("Post content should be less than 1000 characters.");
+      setSuccessMessage("");
+      return;
+    } else {
+      setErrorMessage("");
+    }
+
     const Image = form.Image.files[0];
     const UserId = localStorage.getItem('userId');
 
@@ -18,7 +32,20 @@ export default function CreatePost() {
     if (Image) formdata.append('Image', Image);
     if (UserId) formdata.append('UserId', UserId);
 
-    dispatch(createPost(formdata));
+    try {
+  await dispatch(createPost(formdata)).unwrap();
+
+  setSuccessMessage("Post created successfully!");
+  setErrorMessage("");
+  form.reset();
+
+  setTimeout(() => setSuccessMessage(""), 3000);
+} catch (error: any) {
+  console.error("Create post error:", error);
+  setSuccessMessage("");
+  setErrorMessage(error || "Failed to create post. Please try again.");
+}
+
   };
 
   return (
@@ -26,7 +53,7 @@ export default function CreatePost() {
       <div className="w-full max-w-2xl p-8 bg-white/100 backdrop-blur-md rounded-3xl shadow-2xl border border-white/40 transition-all duration-300">
 
         {/* Introductory Text */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-4">
           <h1 className="text-4xl font-extrabold text-gray-800 mb-4 drop-shadow">
             Share Your Thoughts 💭
           </h1>
@@ -35,6 +62,20 @@ export default function CreatePost() {
             Share what's on your mind and let your voice be heard. You can even upload an image to bring your story to life!
           </p>
         </div>
+
+        {/* Success message */}
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-100 text-green-800 rounded text-center font-semibold">
+            {successMessage}
+          </div>
+        )}
+
+        {/* Error message */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-center font-semibold">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handlesubmit} className="space-y-6">
