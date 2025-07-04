@@ -1,10 +1,49 @@
 // src/lib/loginSlice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-export const loginUser = createAsyncThunk(
+// Define User interface
+export interface User {
+  id: string;
+  email: string;
+  userType: string;
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+export interface LoginState {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  error: string | null;
+}
+
+// Initial state
+const initialState: LoginState = {
+  user: null,
+  token: null,
+  loading: false,
+  error: null,
+};
+
+// Helper to extract error message
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message || 'Login failed';
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+// loginUser thunk
+export const loginUser = createAsyncThunk<
+  { token: string; user: User },
+  { email: string; password: string },
+  { rejectValue: string }
+>(
   'login/loginUser',
-  async (credentials: { email: string; password: string }, thunkAPI) => {
+  async (credentials, thunkAPI) => {
     try {
       const response = await axios.post(
         'https://cancapp.runasp.net/api/auth/login',
@@ -21,27 +60,11 @@ export const loginUser = createAsyncThunk(
       }
 
       return { token, user };
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Login failed'
-      );
+    } catch (error: unknown) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error));
     }
   }
 );
-
-interface LoginState {
-  user: any | null;
-  token: string | null;
-  loading: boolean;
-  error: string | null;
-}
-
-const initialState: LoginState = {
-  user: null,
-  token: null,
-  loading: false,
-  error: null,
-};
 
 const loginSlice = createSlice({
   name: 'login',
@@ -57,7 +80,7 @@ const loginSlice = createSlice({
         localStorage.removeItem('userType');
       }
     },
-    setUserFromStorage(state, action) {
+    setUserFromStorage(state, action: PayloadAction<{ token: string; user: User }>) {
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
@@ -75,7 +98,7 @@ const loginSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Login failed';
       });
   },
 });

@@ -1,12 +1,13 @@
 "use client";
-import React, { useState } from 'react';
-import { createPost } from '@/lib/postsSlice';
-import { useDispatch } from 'react-redux';
+
+import React, { useState } from "react";
+import { createPost } from "@/lib/postsSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/lib/store";
 
 export default function CreatePost() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
 
-  // State for success and error messages
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -15,7 +16,6 @@ export default function CreatePost() {
     const form = e.currentTarget;
     const Content = form.Content.value.trim();
 
-    // Validation: content length less than 1000 chars
     if (Content.length > 1000) {
       setErrorMessage("Post content should be less than 1000 characters.");
       setSuccessMessage("");
@@ -25,64 +25,60 @@ export default function CreatePost() {
     }
 
     const Image = form.Image.files[0];
-    const UserId = localStorage.getItem('userId');
+    const UserId = localStorage.getItem("userId");
 
     const formdata = new FormData();
-    formdata.append('Content', Content);
-    if (Image) formdata.append('Image', Image);
-    if (UserId) formdata.append('UserId', UserId);
+    formdata.append("Content", Content);
+    if (Image) formdata.append("Image", Image);
+    if (UserId) formdata.append("UserId", UserId);
 
     try {
-  await dispatch(createPost(formdata)).unwrap();
+      await dispatch(createPost(formdata)).unwrap();
 
-  setSuccessMessage("Post created successfully!");
-  setErrorMessage("");
-  form.reset();
-
-  setTimeout(() => setSuccessMessage(""), 3000);
-} catch (error: any) {
-  console.error("Create post error:", error);
-  setSuccessMessage("");
-  setErrorMessage(error || "Failed to create post. Please try again.");
-}
-
+      setSuccessMessage("Post created successfully!");
+      setErrorMessage("");
+      form.reset();
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error: unknown) {
+      console.error("Create post error:", error);
+      const errMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to create post. Please try again.";
+      setSuccessMessage("");
+      setErrorMessage(errMsg);
+    }
   };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center px-4">
       <div className="w-full max-w-2xl p-8 bg-white/100 backdrop-blur-md rounded-3xl shadow-2xl border border-white/40 transition-all duration-300">
-
-        {/* Introductory Text */}
         <div className="text-center mb-4">
           <h1 className="text-4xl font-extrabold text-gray-800 mb-4 drop-shadow">
             Share Your Thoughts 💭
           </h1>
           <p className="text-lg text-gray-700 max-w-xl mx-auto">
             This is your space to inspire, connect, or simply express yourself.
-            Share what's on your mind and let your voice be heard. You can even upload an image to bring your story to life!
+            Share what&apos;s on your mind and let your voice be heard. You can even upload an image to bring your story to life!
           </p>
         </div>
 
-        {/* Success message */}
         {successMessage && (
           <div className="mb-4 p-3 bg-green-100 text-green-800 rounded text-center font-semibold">
             {successMessage}
           </div>
         )}
 
-        {/* Error message */}
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-100 text-red-800 rounded text-center font-semibold">
             {errorMessage}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handlesubmit} className="space-y-6">
-          {/* Textarea */}
           <div>
             <label htmlFor="Content" className="block text-sm font-medium text-gray-700 mb-2">
-              What's on your mind?
+              What&apos;s on your mind?
             </label>
             <textarea
               name="Content"
@@ -94,7 +90,6 @@ export default function CreatePost() {
             />
           </div>
 
-          {/* File Input */}
           <div>
             <label htmlFor="Image" className="block text-sm font-medium text-gray-700 mb-2">
               Upload an Image (optional)
@@ -112,7 +107,6 @@ export default function CreatePost() {
             />
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"

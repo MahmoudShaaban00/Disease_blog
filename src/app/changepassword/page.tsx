@@ -4,25 +4,31 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { changePassword } from "@/lib/profileSlice";
 import { useRouter } from "next/navigation";
+import { State } from "@/interface/state";
+import { AppDispatch } from "@/lib/store";
 
 export default function ChangePassword() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { loading, error, message } = useSelector((state: State) => state.profile);
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(changePassword({ oldPassword, newPassword })).then((res: any) => {
-      if (!res.error) {
-        setOldPassword("");
-        setNewPassword("");
-        // Redirect to login page after successful password change
-        router.push('/login');
-      }
-    });
+
+    try {
+      await dispatch(changePassword({ oldPassword, newPassword })).unwrap();
+
+      // If successful
+      setOldPassword("");
+      setNewPassword("");
+      router.push("/login");
+    } catch (err) {
+      // If error is returned, do nothing — error state is already handled in Redux
+      console.error("Password change failed:", err);
+    }
   };
 
   return (

@@ -4,11 +4,36 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllPosts, deletePost, updatePost } from "@/lib/postsSlice";
 import { getComment, createComment, deleteComment, editComment } from "@/lib/commentSlice";
+import { State } from "@/interface/state";
+import { AppDispatch } from "@/lib/store";
+import Image from "next/image";
+import { Post as BasePost } from "@/lib/postsSlice";
+import { Comment as BaseComment } from "@/lib/commentSlice";
+
+
+interface Post extends BasePost {
+  userProgilePictureUrl?: string;  // fixed typo here too
+  name?: string;
+  commentsCount?: number;
+  time?: string | number;  // make optional
+  imageUrl?: string;
+}
+
+
+interface Comment extends BaseComment {
+  id: number;
+  postId: string;
+  userImageUrl?: string;
+  name?: string;          // make optional
+  time?: string | number; // make optional
+  content: string;
+}
+
 
 export default function PostsPage() {
-  const dispatch = useDispatch<any>();
-  const { allPosts, loading, error } = useSelector((state: any) => state.posts);
-  const { comments } = useSelector((state: any) => state.comment);
+  const dispatch = useDispatch<AppDispatch>();
+  const { allPosts, loading, error } = useSelector((state: State) => state.posts);
+  const { comments } = useSelector((state: State) => state.comment);
 
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [visibleCommentPostId, setVisibleCommentPostId] = useState<string | null>(null);
@@ -69,7 +94,7 @@ export default function PostsPage() {
   };
 
   // Start editing a post
-  const startEditing = (post: any) => {
+  const startEditing = (post: Post) => {
     setEditingPostId(post.id);
     setEditBody(post.content);
     setEditImageFile(null);
@@ -143,7 +168,7 @@ export default function PostsPage() {
 
   // Delete comment
   const handleDeleteComment = (postId: string, commentId: string) => {
-    dispatch(deleteComment({ postId, commentId }));
+    dispatch(deleteComment({ postId, commentId: Number(commentId) }));
   };
 
   // Start editing a comment
@@ -185,7 +210,7 @@ export default function PostsPage() {
 
       {!loading && !error && allPosts?.length > 0 && (
         <div className="flex flex-col gap-10">
-          {allPosts.map((post: any) => {
+          {allPosts.map((post: Post) => {
             const isExpanded = expandedPostId === post.id;
             const isLong = post.content.length > 200;
             const previewText = post.content.slice(0, 200);
@@ -199,14 +224,18 @@ export default function PostsPage() {
               >
                 {/* User Info */}
                 <div className="flex items-center gap-4 mb-5 ">
-                  <img
+                  <Image
                     src={post.userProgilePictureUrl || "/default-profile.png"}
                     alt={post.name || "User"}
-                    className="w-12 h-12 rounded-full object-cover border border-gray-300"
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover border border-gray-300"
                   />
                   <div>
                     <p className="font-semibold text-lg text-gray-800 drop-shadow-sm">{post.name || "Unknown"}</p>
-                    <p className="text-sm text-gray-500">{new Date(post.time).toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(post.time ?? "").toLocaleString() /* or "" fallback */}
+                    </p>
                   </div>
                 </div>
 
@@ -248,10 +277,12 @@ export default function PostsPage() {
                       />
                       {(editImagePreview || post.imageUrl) && (
                         <div className="mt-4 rounded-lg overflow-hidden border border-gray-300">
-                          <img
-                            src={editImagePreview || post.imageUrl}
+                          <Image
+                            src={editImagePreview || post.imageUrl || "/default.png"}
                             alt="Post Preview"
-                            className="w-full h-48 object-cover rounded-md"
+                            width={600}
+                            height={300}
+                            className="object-cover rounded-md"
                           />
                         </div>
                       )}
@@ -277,9 +308,11 @@ export default function PostsPage() {
                 ) : (
                   <>
                     {post.imageUrl && (
-                      <img
-                        src={post.imageUrl}
-                        alt="Post"
+                      <Image
+                        src={post.imageUrl || "/default.png"}
+                        alt="Post Image"
+                        width={600}
+                        height={400}
                         className="w-full h-80 object-cover rounded-xl mb-4 border border-gray-200 shadow-sm"
                       />
                     )}
@@ -312,10 +345,10 @@ export default function PostsPage() {
                           {showComments ? "Hide Comments" : `Show Comments (${post.commentsCount ?? 0})`}
                         </button>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 ">
                         <button
                           onClick={() => startEditing(post)}
-                          className="px-4 py-2 rounded-lg font-semibold text-white bg-yellow-400 hover:bg-yellow-500 transition-colors duration-300"
+                          className=" md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-yellow-400 hover:bg-yellow-500 transition-colors duration-300"
                         >
                           Edit
                         </button>
@@ -323,7 +356,7 @@ export default function PostsPage() {
                         <button
                           onClick={() => handleDelete(post.id)}
                           disabled={loading}
-                          className="px-4 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className=" md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Delete
                         </button>
@@ -355,22 +388,26 @@ export default function PostsPage() {
                       <div className="mt-6 border-t border-gray-300 pt-4">
                         <ul className="space-y-4">
                           {comments[post.id].length > 0 ? (
-                            comments[post.id].map((comment: any) => {
+                            comments[post.id].map((comment: Comment) => {
                               if (!comment) return null;
 
                               return (
                                 <li key={comment.id} className="flex items-start gap-3">
-                                  <img
+                                  <Image
                                     src={comment.userImageUrl || "/default-profile.png"}
-                                    alt={comment.name}
-                                    className="w-10 h-10 rounded-full object-cover border"
+                                    alt={comment.name || "User"}
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full border"
                                   />
+
                                   <div className="bg-gray-100 p-3 rounded-xl w-full shadow-sm">
                                     <div className="flex justify-between mb-1">
                                       <p className="font-semibold text-gray-800">{comment.name}</p>
-                                      <span className="text-xs text-gray-500">
-                                        {new Date(comment.time).toLocaleString()}
+                                      <span className="text-sm text-gray-500">
+                                        {new Date(comment.time ?? "").toLocaleString() /* or "" fallback */}
                                       </span>
+
                                     </div>
                                     <div className="flex flex-col gap-2 mt-2">
                                       {editingCommentId === comment.id ? (
@@ -407,7 +444,7 @@ export default function PostsPage() {
                                           <p className="text-gray-800 flex-1 break-words">{comment.content}</p>
                                           <div className="flex gap-2 ml-4">
                                             <button
-                                              onClick={() => handleDeleteComment(comment.postId, comment.id)}
+                                              onClick={() => handleDeleteComment(comment.postId, comment.id.toString())}
                                               className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition"
                                             >
                                               Delete
@@ -445,5 +482,4 @@ export default function PostsPage() {
       )}
     </div>
   );
-
 }

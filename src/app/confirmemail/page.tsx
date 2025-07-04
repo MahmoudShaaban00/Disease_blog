@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import { confirmEmail } from "@/lib/authSlice";
 import { useRouter } from "next/navigation";
+import { State } from "@/interface/state";
+import { AppDispatch } from "@/lib/store";
 
 export default function Page() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { loading, error, emailConfirmed } = useSelector((state: State) => state.auth);
+  const { loading, error } = useSelector((state: State) => state.auth);
 
   const formik = useFormik({
     initialValues: {
@@ -22,9 +24,13 @@ export default function Page() {
       otp: Yup.string().required("OTP is required"),
     }),
     onSubmit: async (values) => {
-      const result = await dispatch(confirmEmail(values)).unwrap();
-      if (result) {
-        router.push("/login"); // ✅ Redirect to login if confirmed
+      try {
+        const result = await dispatch(confirmEmail(values)).unwrap();
+        if (result) {
+          router.push("/login");
+        }
+      } catch (err) {
+        console.error("Confirmation error:", err);
       }
     },
   });

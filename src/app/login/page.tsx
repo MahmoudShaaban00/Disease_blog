@@ -6,9 +6,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { loginUser } from "@/lib/loginSlice";
 import { useRouter } from "next/navigation";
+import { State } from "@/interface/state";
+import { AppDispatch } from "@/lib/store";
 
 export default function LoginPage() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { loading, error, user } = useSelector((state:State) => state.login);
 

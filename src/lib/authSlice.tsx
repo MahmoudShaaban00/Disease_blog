@@ -1,17 +1,25 @@
-// src/lib/authSlice.ts
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Define Auth State interface
-interface AuthState {
-  user: any | null;
+// ----------- Types -----------
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  userType: string;
+  [key: string]: unknown; 
+}
+
+
+export interface AuthState {
+  user: User | null;
   loading: boolean;
   error: string | null;
   emailConfirmed: boolean;
   emailResent: boolean;
 }
 
-// Initial state with proper typing
+// ----------- Initial State -----------
 const initialState: AuthState = {
   user: null,
   loading: false,
@@ -20,76 +28,74 @@ const initialState: AuthState = {
   emailResent: false,
 };
 
-// Register User
-export const registerUser = createAsyncThunk(
-  "auth/registerUser",
-  async (formData: FormData, thunkAPI) => {
-    try {
-      const res = await axios.post(
-        "https://cancapp.runasp.net/api/auth/register",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log("Registration successful:", res.data);
-      return res.data;
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Registration failed"
-      );
-    }
+// ----------- Error Helper -----------
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message || "Unknown error";
   }
-);
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+// ----------- Thunks -----------
+
+// Register
+export const registerUser = createAsyncThunk<
+  User,
+  FormData,
+  { rejectValue: string }
+>("auth/registerUser", async (formData, thunkAPI) => {
+  try {
+    const res = await axios.post(
+      "https://cancapp.runasp.net/api/auth/register",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error));
+  }
+});
 
 // Confirm Email
-export const confirmEmail = createAsyncThunk(
-  "auth/confirmEmail",
-  async (data: { email: string; otp: string }, thunkAPI) => {
-    try {
-      const res = await axios.post(
-        "https://cancapp.runasp.net/api/auth/confirm-email",
-        data,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      console.log("Email confirmed:", res.data);
-      return res.data;
-    } catch (error: any) {
-      console.error("Email confirmation error:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Email confirmation failed"
-      );
-    }
+export const confirmEmail = createAsyncThunk<
+  { success: boolean; message: string },
+  { email: string; otp: string },
+  { rejectValue: string }
+>("auth/confirmEmail", async (data, thunkAPI) => {
+  try {
+    const res = await axios.post(
+      "https://cancapp.runasp.net/api/auth/confirm-email",
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error));
   }
-);
+});
 
-// Resend Email Confirmation
-export const resendConfirmEmail = createAsyncThunk(
-  "auth/resendConfirmEmail",
-  async (data: { email: string }, thunkAPI) => {
-    try {
-      const res = await axios.post(
-        "https://cancapp.runasp.net/api/auth/resend-Confirm-email",
-        data,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      console.log("Resend confirmation email success:", res.data);
-      return res.data;
-    } catch (error: any) {
-      console.error("Resend email error:", error);
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Resend email failed"
-      );
-    }
+// Resend Email
+export const resendConfirmEmail = createAsyncThunk<
+  { success: boolean; message: string },
+  { email: string },
+  { rejectValue: string }
+>("auth/resendConfirmEmail", async (data, thunkAPI) => {
+  try {
+    const res = await axios.post(
+      "https://cancapp.runasp.net/api/auth/resend-Confirm-email",
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error));
   }
-);
+});
 
-// Auth Slice
+// ----------- Slice -----------
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -101,13 +107,13 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? "Registration failed";
       })
 
       // Confirm Email
@@ -122,11 +128,11 @@ const authSlice = createSlice({
       })
       .addCase(confirmEmail.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? "Email confirmation failed";
         state.emailConfirmed = false;
       })
 
-      // Resend Confirm Email
+      // Resend Email
       .addCase(resendConfirmEmail.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -138,7 +144,7 @@ const authSlice = createSlice({
       })
       .addCase(resendConfirmEmail.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload ?? "Resend email failed";
         state.emailResent = false;
       });
   },

@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@/lib/authSlice";
 import { useRouter } from "next/navigation";
-import type { AppDispatch } from "@/lib/store"; // ✅ Correct type for dispatch
+import type { AppDispatch } from "@/lib/store";
+import { State } from "@/interface/state";
 
-// ✅ Yup Validation Schema
+// Yup Validation Schema
 const RegisterSchema = Yup.object().shape({
   Email: Yup.string().email("Invalid email").required("Email is required"),
   Password: Yup.string()
@@ -24,9 +26,9 @@ const RegisterSchema = Yup.object().shape({
 });
 
 export default function RegisterForm() {
-  const dispatch = useDispatch<AppDispatch>(); // ✅ typed dispatch
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { loading, error, user } = useSelector((state: any) => state.auth); // Adjust `State` type if needed
+  const { loading, error, user } = useSelector((state: State) => state.auth);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   return (
@@ -137,7 +139,14 @@ export default function RegisterForm() {
                   className="w-full text-white"
                 />
                 {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="mt-2 h-32 object-contain rounded" />
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    width={128}
+                    height={128}
+                    className="mt-2 object-contain rounded"
+                    unoptimized={true}
+                  />
                 )}
                 <ErrorMessage name="Image" component="div" className="text-red-300 text-sm mt-1" />
               </div>

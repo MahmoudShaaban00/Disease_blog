@@ -1,36 +1,46 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { getUsers, updateProfile } from "@/lib/profileSlice";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { State } from "@/interface/state";
+import { AppDispatch } from "@/lib/store";
+
+interface User {
+  id: string;
+  name: string;
+  address: string;
+  image: string;
+  userType: string;
+}
 
 export default function UsersPage() {
-
   const router = useRouter();
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const { users, loading, error } = useSelector((state: State) => state.profile);
   const [isToggled, setIsToggled] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const openModal = (user: any) => {
+  const openModal = (user: User) => {
     setSelectedUser(user);
     setIsToggled(true);
   };
 
-  
   const closeModal = () => {
     setIsToggled(false);
     setSelectedUser(null);
   };
 
-  //update profile
+  // Update profile
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const form = e.currentTarget;
-    const ImageFile = form.ImageFile.files?.[0];
-    const Name = form.Name.value;
-    const Address = form.Address.value;
+    const ImageFile = (form.elements.namedItem("ImageFile") as HTMLInputElement)?.files?.[0];
+    const Name = (form.elements.namedItem("Name") as HTMLInputElement).value;
+    const Address = (form.elements.namedItem("Address") as HTMLInputElement).value;
 
     const formData = new FormData();
     formData.append("Name", Name);
@@ -46,7 +56,7 @@ export default function UsersPage() {
     closeModal();
   };
 
-//handleroute
+  // Handleroute to change password page
   const handleroute = () => {
     router.push("/changepassword");
   };
@@ -54,7 +64,6 @@ export default function UsersPage() {
   useEffect(() => {
     dispatch(getUsers());
   }, [dispatch]);
-  
 
   return (
     <div className="relative min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 overflow-hidden py-12 px-6">
@@ -66,41 +75,39 @@ export default function UsersPage() {
       <h1 className="text-white text-4xl font-bold text-center drop-shadow mb-10">All Patients</h1>
 
       {/* Loading & Error States */}
-      {loading && (
-        <p className="text-center text-white font-semibold text-xl">Loading...</p>
-      )}
+      {loading && <p className="text-center text-white font-semibold text-xl">Loading...</p>}
       {error && (
-        <p className="text-center text-red-200">
-          {typeof error === "string" ? error : JSON.stringify(error)}
-        </p>
+        <p className="text-center text-red-200">{typeof error === "string" ? error : JSON.stringify(error)}</p>
       )}
 
       {/* Users Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto z-10 relative">
         {!loading &&
-          users.map((user: any) => (
+          users.map((user: User) => (
             <div
               key={user.id}
               className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center transition transform hover:scale-105"
             >
-              <img
-                src={user.image}
+              <Image
+                src={user.image || "/default-profile.png"}
                 alt={user.name}
-                className="w-24 h-24 rounded-full object-cover border-4 border-blue-500 shadow"
+                width={96}
+                height={96}
+                className="rounded-full object-cover border-4 border-blue-500 shadow"
               />
               <h2 className="mt-4 text-xl font-bold text-gray-800">{user.name}</h2>
               <p className="text-gray-600">{user.address}</p>
               <span className="mt-2 inline-block px-4 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">
                 {user.userType}
               </span>
-              
+
               <button
                 className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
                 onClick={() => openModal(user)}
               >
                 Edit Profile
               </button>
-            <button
+              <button
                 className="mt-4 bg-amber-500 text-white px-4 py-2 rounded-lg shadow hover:bg-amber-400 transition"
                 onClick={handleroute}
               >
@@ -121,6 +128,7 @@ export default function UsersPage() {
                 <input
                   type="text"
                   name="Name"
+                  defaultValue={selectedUser.name}
                   placeholder="Enter name"
                   className="w-full p-2 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
@@ -131,6 +139,7 @@ export default function UsersPage() {
                 <input
                   type="text"
                   name="Address"
+                  defaultValue={selectedUser.address}
                   placeholder="Enter address"
                   className="w-full p-2 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
@@ -138,11 +147,7 @@ export default function UsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Image</label>
-                <input
-                  type="file"
-                  name="ImageFile"
-                  className="w-full border rounded p-2"
-                />
+                <input type="file" name="ImageFile" className="w-full border rounded p-2" />
               </div>
               <div className="flex justify-between mt-6">
                 <button
