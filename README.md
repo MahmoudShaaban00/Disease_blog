@@ -2,6 +2,18 @@
 
 A modern, fast, and responsive web application built with **Next.js**, **Redux Toolkit**, and **Tailwind CSS** that allows users to create, edit, and delete posts discussing various diseases. The app is designed to foster community engagement by enabling users to ask questions, share information, and support each other.
 
+## Test User Account
+
+You can use the following test user credentials to log in and explore the app:
+
+- **Email:** ms3198@fayoum.edu.eg  
+- **Password:** Google00?!
+
+## Live Demo
+
+Check out the live demo of the app here:  
+[https://disease-blog.vercel.app/](https://disease-blog.vercel.app/)
+
 ## Features
 
 - **User Authentication** (optional, can be added)
@@ -25,9 +37,7 @@ A modern, fast, and responsive web application built with **Next.js**, **Redux T
 ### Prerequisites
 
 - Node.js (v14+ recommended)
-- open terminal
-- move to postion of project
-- write npm run dev
+- Terminal/Command Prompt
 
 ### Installation
 
