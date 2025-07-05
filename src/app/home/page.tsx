@@ -111,30 +111,31 @@ export default function PostsPage() {
   };
 
   // Submit post update
-  const handleUpdateSubmit = async (postId: string) => {
-    if (!editBody.trim()) {
-      alert("Post content cannot be empty");
-      return;
-    }
+const handleUpdateSubmit = async (postId: string) => {
+  if (!editBody.trim()) {
+    alert("Post content cannot be empty");
+    return;
+  }
 
-    const UserId = localStorage.getItem("userId") || "";
+  const UserId = localStorage.getItem("userId") || "";
 
-    const formdata = new FormData();
-    formdata.append("Id", postId);
-    formdata.append("UserId", UserId);
-    formdata.append("Content", editBody);
-    if (editImageFile) formdata.append("Image", editImageFile);
+  const formdata = new FormData();
+  formdata.append("Id", postId);
+  formdata.append("UserId", UserId);
+  formdata.append("Content", editBody);
+  if (editImageFile) formdata.append("Image", editImageFile);
 
-    try {
-      await dispatch(updatePost({ postId, formdata })).unwrap();
-      cancelEditing();
-      await dispatch(getAllPosts());
-      alert("Post updated successfully");
-    } catch (error) {
-      alert("Failed to update post");
-      console.error(error);
-    }
-  };
+  try {
+    await dispatch(updatePost({ formdata })).unwrap(); // no postId param here
+    cancelEditing();
+    await dispatch(getAllPosts());
+    alert("Post updated successfully");
+  } catch (error) {
+    alert("Failed to update post");
+    console.error(error);
+  }
+};
+
 
   // Handle comment text change per post
   const handleCommentChange = (postId: string, value: string) => {

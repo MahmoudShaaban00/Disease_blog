@@ -1,5 +1,6 @@
 // src/lib/postsSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
 
 // Define Post interface according to your API structure
 export interface Post {
@@ -45,13 +46,31 @@ export const createPost = createAsyncThunk<Post, FormData, { rejectValue: string
         body: formdata,
       });
 
+      const contentType = response.headers.get("Content-Type");
+
       if (!response.ok) {
-        const errorData: FetchError | null = await response.json().catch(() => null);
-        return rejectWithValue(errorData?.message || `Failed to create post, status ${response.status}`);
+        let errorMessage = `Failed to create post, status ${response.status}`;
+        if (contentType?.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData?.message || errorMessage;
+        }
+        return rejectWithValue(errorMessage);
       }
 
-      const data: Post = await response.json();
-      return data;
+      // Success - try to parse JSON only if content exists
+      if (contentType?.includes("application/json")) {
+        const data: Post = await response.json();
+        return data;
+      } else {
+        // Optional: return a dummy post or message if server returns no content
+        console.warn("No JSON returned from server.");
+        return {
+          id: "", // You can adjust according to your Post model
+          content: "",
+          image: "",
+          userId: "",
+        } as Post;
+      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Network error";
       return rejectWithValue(message);
@@ -88,65 +107,37 @@ export const deletePost = createAsyncThunk<string, string, { rejectValue: string
 // UPDATE post
 export const updatePost = createAsyncThunk<
   Post,
-  { postId: string; formdata: FormData },
+  { formdata: FormData },
   { rejectValue: string }
 >(
   "posts/update",
-  async ({ postId, formdata }, { rejectWithValue }) => {
+  async ({ formdata }, { rejectWithValue }) => {
     try {
       const token =
         typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
 
-      const response = await fetch(`https://cancapp.runasp.net/api/post/${postId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formdata,
-      });
-
-      if (!response.ok) {
-        let errorMessage = `Failed to update post with status ${response.status}`;
-        try {
-          const errorText = await response.text();
-          if (errorText) {
-            const errorData = JSON.parse(errorText);
-            if (errorData?.message) {
-              errorMessage = errorData.message;
-            }
-          }
-        } catch {
-          // parsing failed or no body
+      const response = await axios.put<Post>(
+        "https://cancapp.runasp.net/api/Post", // no postId in URL
+        formdata,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-        return rejectWithValue(errorMessage);
-      }
+      );
 
-      const text = await response.text();
-      let data: Post | null = null;
-      if (text) {
-        try {
-          data = JSON.parse(text);
-        } catch {
-          // Invalid JSON, ignore
-        }
-      }
+      return response.data;
+    }catch (error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Unexpected error";
+  return rejectWithValue(message);
+}
 
-      const updatedPost: Post = data || {
-        id: formdata.get("Id") as string,
-        content: formdata.get("Content") as string,
-        userId: formdata.get("UserId") as string,
-        image: "", // optionally set image if you have it
-      };
-
-      return updatedPost;
-    } catch (error: unknown) {
-      console.error("Update Post Error:", error);
-      const message = error instanceof Error ? error.message : "Unexpected error";
-      return rejectWithValue(message);
-    }
   }
 );
-
 
 
 
