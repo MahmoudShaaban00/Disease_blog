@@ -22,6 +22,18 @@ A modern, fast, and responsive web application built with **Next.js**, **Redux T
 
 ## Getting Started
 
+## Live Demo
+
+Try the live demo here: [https://disease-blog.vercel.app/login](https://disease-blog.vercel.app/login)
+
+### Test User Credentials
+
+Use the following credentials to log in and test the app:
+
+- **Email:** ms3198@fayoum.edu.eg  
+- **Password:** Google00?!
+
+
 ### Prerequisites
 
 - Node.js (v14+ recommended)  
