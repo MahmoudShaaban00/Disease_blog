@@ -48,6 +48,9 @@ export default function PostsPage() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editCommentText, setEditCommentText] = useState<string>("");
 
+  const currentUserId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+
+
   useEffect(() => {
     dispatch(getAllPosts());
   }, [dispatch]);
@@ -126,6 +129,7 @@ export default function PostsPage() {
       await dispatch(updatePost({ postId, formdata })).unwrap();
       cancelEditing();
       await dispatch(getAllPosts());
+      alert("Post updated successfully");
     } catch (error) {
       alert("Failed to update post");
       console.error(error);
@@ -161,7 +165,6 @@ export default function PostsPage() {
       setCommentInputPostId(null);
       dispatch(getComment(postId));
     } catch (error) {
-      alert("Failed to create comment");
       console.error(error);
     }
   };
@@ -220,7 +223,7 @@ export default function PostsPage() {
             return (
               <div
                 key={post.id}
-                className="bg-white border border-gray-200 rounded-2xl shadow-md p-6 flex flex-col transition-transform duration-300 hover:shadow-xl hover:scale-[1.02] w-3/4 mx-auto"
+                className="bg-white border border-gray-200 rounded-2xl shadow-md p-6 flex flex-col transition-transform duration-300 hover:shadow-xl hover:scale-[1.02] md:w-3/4 mx-auto"
               >
                 {/* User Info */}
                 <div className="flex items-center gap-4 mb-5 ">
@@ -332,35 +335,38 @@ export default function PostsPage() {
                       <div className="flex items-center gap-3 mb-4 md:mb-0">
                         <button
                           onClick={() => toggleCommentInput(post.id)}
-                          className={`px-4 py-2 rounded-lg font-semibold text-white transition-colors duration-300
-                        ${showCommentInput ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
+                          className={`md:mx-0 mx-auto px-4 py-2 rounded-lg font-semibold text-white transition-colors duration-300
+                        ${showCommentInput ? "md:mx-0 mx-auto bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
                         >
                           {showCommentInput ? "Cancel Comment" : "Create Comment"}
                         </button>
 
                         <button
                           onClick={() => toggleComments(post.id)}
-                          className="px-4 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+                          className=" md:mx-0 mx-auto px-4 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
                         >
                           {showComments ? "Hide Comments" : `Show Comments (${post.commentsCount ?? 0})`}
                         </button>
                       </div>
-                      <div className="flex items-center gap-3 ">
-                        <button
-                          onClick={() => startEditing(post)}
-                          className=" md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-yellow-400 hover:bg-yellow-500 transition-colors duration-300"
-                        >
-                          Edit
-                        </button>
+                      {post.userId === currentUserId && (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => startEditing(post)}
+                            className="md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-yellow-400 hover:bg-yellow-500 transition-colors duration-300"
+                          >
+                            Edit
+                          </button>
 
-                        <button
-                          onClick={() => handleDelete(post.id)}
-                          disabled={loading}
-                          className=" md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                          <button
+                            onClick={() => handleDelete(post.id)}
+                            disabled={loading}
+                            className="md:mx-0 mx-auto md:px-4 px-10 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+
                     </div>
 
                     {/* Comment input form */}

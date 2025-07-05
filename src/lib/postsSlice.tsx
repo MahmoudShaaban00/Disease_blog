@@ -86,12 +86,18 @@ export const deletePost = createAsyncThunk<string, string, { rejectValue: string
 );
 
 // UPDATE post
-export const updatePost = createAsyncThunk<Post, { postId: string; formdata: FormData }, { rejectValue: string }>(
+export const updatePost = createAsyncThunk<
+  Post,
+  { postId: string; formdata: FormData },
+  { rejectValue: string }
+>(
   "posts/update",
-  async ({ formdata }, { rejectWithValue }) => {
+  async ({ postId, formdata }, { rejectWithValue }) => {
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
-      const response = await fetch(`https://cancapp.runasp.net/api/post`, {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+
+      const response = await fetch(`https://cancapp.runasp.net/api/post/${postId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -100,18 +106,49 @@ export const updatePost = createAsyncThunk<Post, { postId: string; formdata: For
       });
 
       if (!response.ok) {
-        const errorData: FetchError | null = await response.json().catch(() => null);
-        return rejectWithValue(errorData?.message || "Failed to update post");
+        let errorMessage = `Failed to update post with status ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            const errorData = JSON.parse(errorText);
+            if (errorData?.message) {
+              errorMessage = errorData.message;
+            }
+          }
+        } catch {
+          // parsing failed or no body
+        }
+        return rejectWithValue(errorMessage);
       }
 
-      const data: Post = await response.json();
-      return data;
+      const text = await response.text();
+      let data: Post | null = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          // Invalid JSON, ignore
+        }
+      }
+
+      const updatedPost: Post = data || {
+        id: formdata.get("Id") as string,
+        content: formdata.get("Content") as string,
+        userId: formdata.get("UserId") as string,
+        image: "", // optionally set image if you have it
+      };
+
+      return updatedPost;
     } catch (error: unknown) {
+      console.error("Update Post Error:", error);
       const message = error instanceof Error ? error.message : "Unexpected error";
       return rejectWithValue(message);
     }
   }
 );
+
+
+
 
 // State interface
 export interface PostsState {

@@ -23,6 +23,8 @@ export default function UsersPage() {
   const [isToggled, setIsToggled] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  const loggedInUserId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+
   const openModal = (user: User) => {
     setSelectedUser(user);
     setIsToggled(true);
@@ -33,7 +35,6 @@ export default function UsersPage() {
     setSelectedUser(null);
   };
 
-  // Update profile
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -47,16 +48,10 @@ export default function UsersPage() {
     formData.append("Address", Address);
     if (ImageFile) formData.append("ImageFile", ImageFile);
 
-    // Debug output
-    for (const pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
     dispatch(updateProfile(formData));
     closeModal();
   };
 
-  // Handleroute to change password page
   const handleroute = () => {
     router.push("/changepassword");
   };
@@ -67,20 +62,16 @@ export default function UsersPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 overflow-hidden py-12 px-6">
-      {/* Background decoration */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-white opacity-10 rounded-full filter blur-3xl" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-white opacity-10 rounded-full filter blur-3xl" />
 
-      {/* Header */}
       <h1 className="text-white text-4xl font-bold text-center drop-shadow mb-10">All Patients</h1>
 
-      {/* Loading & Error States */}
       {loading && <p className="text-center text-white font-semibold text-xl">Loading...</p>}
       {error && (
         <p className="text-center text-red-200">{typeof error === "string" ? error : JSON.stringify(error)}</p>
       )}
 
-      {/* Users Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto z-10 relative">
         {!loading &&
           users.map((user: User) => (
@@ -101,23 +92,26 @@ export default function UsersPage() {
                 {user.userType}
               </span>
 
-              <button
-                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-                onClick={() => openModal(user)}
-              >
-                Edit Profile
-              </button>
-              <button
-                className="mt-4 bg-amber-500 text-white px-4 py-2 rounded-lg shadow hover:bg-amber-400 transition"
-                onClick={handleroute}
-              >
-                Change Password
-              </button>
+              {user.id === loggedInUserId && (
+                <>
+                  <button
+                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+                    onClick={() => openModal(user)}
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    className="mt-4 bg-amber-500 text-white px-4 py-2 rounded-lg shadow hover:bg-amber-400 transition"
+                    onClick={handleroute}
+                  >
+                    Change Password
+                  </button>
+                </>
+              )}
             </div>
           ))}
       </div>
 
-      {/* Modal for Update */}
       {isToggled && selectedUser && (
         <div className="fixed inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-opacity-50 flex items-center justify-center z-20">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-2xl">

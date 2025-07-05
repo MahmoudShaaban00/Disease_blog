@@ -4,9 +4,13 @@ import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { resendConfirmEmail } from "@/lib/authSlice";
+import type { AppDispatch } from "@/lib/store";
 
 export default function Page() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   const formik = useFormik({
     initialValues: {
@@ -17,10 +21,20 @@ export default function Page() {
         .email("Invalid email address")
         .required("Email is required"),
     }),
-    onSubmit: (values) => {
-      // Simulate success, then redirect:
-      console.log("Form data submitted:", values);
-      router.push("/confirmemail");
+    onSubmit: async (values) => {
+      try {
+        console.log("Form data submitted:", values);
+        const result = await dispatch(resendConfirmEmail(values));
+        if (result.meta.requestStatus === "fulfilled") {
+          console.log("Email resent successfully");
+          router.push("/confirmemail");
+        } else {
+          console.error("Failed to resend email:", result.payload);
+          // optionally show error feedback to user here
+        }
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      }
     },
   });
 
@@ -35,10 +49,7 @@ export default function Page() {
         </h2>
 
         <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="block mb-1 font-medium text-white"
-          >
+          <label htmlFor="email" className="block mb-1 font-medium text-white">
             Email
           </label>
           <input
